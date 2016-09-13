@@ -163,6 +163,39 @@ Gmail.prototype.messages = function (q, opts) {
 }
 
 /*
+* Fetches email with specific message Id. Returns a message.
+*
+* e.g. to get single message: gmail.getMessage('1884771040010')
+*/
+
+Gmail.prototype.getMessage = function (messageId, opts, next) {
+  if (!next) {
+      next = opts;
+      opts = {};
+  }
+
+  var r = request({
+    url: api + '/gmail/v1/users/me/messages/' + messageId,
+    json: true,
+    timeout: opts.timeout,
+    timeout: opts.timeout,
+    headers: {
+      'Authorization': 'Bearer ' + this.key
+    }
+  }, function (err, res, body) {
+    if (err) return next && next(err);
+    if (res.statusCode === 404) return next && next(new Error("Message Not Found"));
+    if (res.statusCode !== 200) return next && next(new Error("Failed with status: " + res.statusCode));
+
+    try {
+        return next && next(err, JSON.parse(body));
+    } catch (e) {
+        return next && next(err, body);
+    }
+  });
+}
+
+/*
  * Feteches the number of estimated threads matching the query
  * Invokes callback with err and estimated number
  */

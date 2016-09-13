@@ -86,3 +86,20 @@ test('retrieves messages', function (t) {
     t.end()
   })
 })
+
+test('retrieves single message', function (t) {
+  t.plan(3)
+  nock('https://www.googleapis.com')
+    .get('/gmail/v1/users/me/messages/147dae72a4bab6b4')
+    .replyWithFile(200, __dirname + '/single.json', {
+      'content-type': 'application/json'
+    })
+
+  var gmail = new Gmail('key')
+  gmail.getMessage('147dae72a4bab6b4', {}, function(err, data) {
+    t.equal(data.id, '147dae72a4bab6b4')
+    t.equal(data.historyId, '6435511')
+    t.equal(data.snippet, 'This is a test email.')
+    t.end()
+  })
+})
